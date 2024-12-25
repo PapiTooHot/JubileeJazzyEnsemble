@@ -1,0 +1,186 @@
+/* styles.css */
+
+/* Reset some default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+.screen {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+    opacity: 0.8;
+}
+
+/* Specific backgrounds */
+#start-background {
+    background-image: url('../assets/images/startbackground.png');
+}
+
+#game-background {
+    background-image: url('../assets/images/jubilee.png');
+}
+
+#gameover-background {
+    background-image: url('../assets/images/gameoverbackground.png');
+}
+
+h1, h2, p {
+    color: #fff; /* Changed to white for better contrast on backgrounds */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000; /* Added text shadow for readability */
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.tiles-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows tiles to wrap on smaller screens */
+    justify-content: center;
+    gap: 15px;
+    width: 80%;
+    max-width: 800px; /* Increased max-width to accommodate seven tiles in one row */
+    margin-top: 30px;
+}
+
+.tile {
+    flex: 1 1 100px; /* Flex-grow: 1, Flex-shrink: 1, Flex-basis: 100px */
+    max-width: 120px; /* Maximum width for each tile */
+    height: 120px; /* Fixed height to maintain square shape */
+    position: relative;
+    background-color: lightgray; /* Default color, will be overridden */
+    border: 2px solid #333;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+.tile.active {
+    opacity: 0.8; /* Slight transparency to indicate activation */
+    transform: scale(1.05);
+}
+
+.tile span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    color: #fff; /* White text for contrast */
+    text-shadow: 1px 1px 2px #000; /* Text shadow for readability */
+}
+
+/* Unique Colors for Each Tile */
+.C-tile {
+    background-color: #1E90FF; /* Dodger Blue */
+}
+
+.D-tile {
+    background-color: #32CD32; /* Lime Green */
+}
+
+.E-tile {
+    background-color: #FF4500; /* Orange Red */
+}
+
+.F-tile {
+    background-color: #8A2BE2; /* Blue Violet */
+}
+
+.G-tile {
+    background-color: #FFD700; /* Gold */
+}
+
+.A-tile {
+    background-color: #FF1493; /* Deep Pink */
+}
+
+.B-tile {
+    background-color: #00CED1; /* Dark Turquoise */
+}
+
+/* Ensure active state is visible on colored tiles */
+.tile.active {
+    background-color: rgba(255, 255, 255, 0.3); /* Light overlay to indicate activation */
+}
+
+/* Responsive Design */
+@media (max-width: 800px) {
+    .tiles-container {
+        width: 90%;
+        gap: 10px;
+    }
+
+    .tile {
+        flex: 1 1 80px; /* Adjust flex-basis for smaller screens */
+        max-width: 100px;
+        height: 100px;
+    }
+
+    .tile span {
+        font-size: 1.5em;
+    }
+
+    button {
+        font-size: 1em;
+        padding: 8px 16px;
+    }
+}
+
+@media (max-width: 500px) {
+    .tiles-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tile {
+        flex: none;
+        width: 80px;
+        height: 80px;
+    }
+
+    .tile span {
+        font-size: 1.2em;
+    }
+}
