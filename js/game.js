@@ -10,15 +10,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let playbackSpeed = 800; // Default to Medium
     let difficulty = 'Medium'; // Default difficulty
 
+    // Selected Instrument
+    let selectedInstrument = 'trumpet'; // Default instrument
+
+    // Mode: 'survival' or 'free-play'
+    let mode = 'survival'; // Default mode
+
     // DOM Elements
     const startScreen = document.getElementById('start-screen');
     const gameScreen = document.getElementById('game-screen');
     const gameoverScreen = document.getElementById('gameover-screen');
 
-    const startButton = document.getElementById('start-button');
+    const survivalButton = document.getElementById('survival-button');
+    const freePlayButton = document.getElementById('free-play-button');
+    const beginButton = document.getElementById('begin-button');
     const restartButton = document.getElementById('restart-button');
-    const homeButton = document.getElementById('home-button'); // Home Button
+    const homeButtons = document.querySelectorAll('#home-button'); // Both Home Buttons
 
+    const modeTitle = document.getElementById('mode-title');
+    const levelContainer = document.getElementById('level-container');
     const levelDisplay = document.getElementById('level');
     const finalLevelDisplay = document.getElementById('final-level');
 
@@ -26,44 +36,69 @@ document.addEventListener('DOMContentLoaded', () => {
     const exitFullscreenButton = document.getElementById('exit-fullscreen-button');
 
     // Difficulty Selection Elements
-    const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
+    const difficultyButtons = document.querySelectorAll('.difficulty-button');
 
-    //Instrument Selection
+    // Instrument Selection
     const instrumentButtons = document.querySelectorAll('.instrument-button');
 
-    // Leaderboard Element
-    const dreamloPublicKey = '676cb7128f40bc11e0fedece'; // Public Code
-    const dreamloAddURL = 'http://dreamlo.com/lb/dqcv0UkALUqprzJiF-5T_Q7jTPx0v-gkSSlfF5we1C6g/add'; // Add URL
-    const dreamloRetrieveURL = `http://dreamlo.com/lb/${dreamloPublicKey}/json`; // Retrieve URL
-    const dreamloHighscores = document.getElementById('dreamlo-highscores');
+    /* 
+    // Leaderboard Variables (Commented Out)
+    // const dreamloPublicKey = '676cb7128f40bc11e0fedece'; // Public Code
+    // const dreamloAddURL = 'http://dreamlo.com/lb/dqcv0UkALUqprzJiF-5T_Q7jTPx0v-gkSSlfF5we1C6g/add'; // Add URL
+    // const dreamloRetrieveURL = `http://dreamlo.com/lb/${dreamloPublicKey}/json`; // Retrieve URL
+    // const dreamloHighscores = document.getElementById('dreamlo-highscores');
+    */
 
     // Sound Assets
-    const sounds = {
-        'C': new Audio('./assets/sounds/piano/C.wav'),
-        'D': new Audio('./assets/sounds/piano/D.wav'),
-        'E': new Audio('./assets/sounds/piano/E.wav'),
-        'F': new Audio('./assets/sounds/piano/F.wav'),
-        'G': new Audio('./assets/sounds/piano/G.wav'),
-        'A': new Audio('./assets/sounds/piano/A.wav'),
-        'B': new Audio('./assets/sounds/piano/B.wav'),
-        'success': new Audio('./assets/sounds/effects/success.wav'), // Success Sound
-        'failure': new Audio('./assets/sounds/effects/failure.wav')  // Failure Sound
-    };
+    let sounds = {}; // Initialize as empty object
 
-    // Preload sounds to ensure they are ready when needed
-    Object.values(sounds).forEach(sound => {
-        sound.load();
-    });
+    // Function to Load Sounds Based on Selected Instrument
+    function loadSounds(instrument) {
+        // Pause and remove existing sounds
+        for (let key in sounds) {
+            if (sounds.hasOwnProperty(key)) {
+                sounds[key].pause();
+                delete sounds[key];
+            }
+        }
+
+        // Define new sounds based on the selected instrument
+        sounds = {
+            'C': new Audio(`./assets/sounds/${instrument}/C.wav`),
+            'D': new Audio(`./assets/sounds/${instrument}/D.wav`),
+            'E': new Audio(`./assets/sounds/${instrument}/E.wav`),
+            'F': new Audio(`./assets/sounds/${instrument}/F.wav`),
+            'G': new Audio(`./assets/sounds/${instrument}/G.wav`),
+            'A': new Audio(`./assets/sounds/${instrument}/A.wav`),
+            'B': new Audio(`./assets/sounds/${instrument}/B.wav`),
+            'success': new Audio('./assets/sounds/effects/success.wav'), // Assuming this is instrument-independent
+            'failure': new Audio('./assets/sounds/effects/failure.wav')  // Assuming this is instrument-independent
+        };
+
+        // Preload sounds to ensure they are ready when needed
+        Object.values(sounds).forEach(sound => {
+            sound.load();
+        });
+    }
 
     // Initialize Game
     function initializeGame() {
-        sequence = [];
-        playerInput = [];
-        currentLevel = 1;
-        levelDisplay.textContent = currentLevel;
-        finalLevelDisplay.textContent = currentLevel;
-        generateSequence();
-        playSequence();
+        loadSounds(selectedInstrument); // Load sounds for the selected instrument
+
+        if (mode === 'survival') {
+            sequence = [];
+            playerInput = [];
+            currentLevel = 1;
+            levelDisplay.textContent = currentLevel;
+            finalLevelDisplay.textContent = currentLevel;
+            generateSequence();
+            playSequence();
+            levelContainer.classList.remove('hidden');
+        } else if (mode === 'free-play') {
+            // In Free Play mode, no need to generate or play a sequence
+            // Ensure level display is hidden
+            levelContainer.classList.add('hidden');
+        }
     }
 
     // Generate Random Sequence
@@ -122,33 +157,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle Tile Click
     function handleTileClick(e) {
-        if (!canInput) return;
-
         const clickedNote = e.currentTarget.getAttribute('data-note');
-        playerInput.push(clickedNote);
-        playNote(clickedNote);
-        highlightTile(clickedNote);
 
-        // Check the player's input in real-time
-        const currentStep = playerInput.length - 1;
-        if (playerInput[currentStep] !== sequence[currentStep]) {
-            // Incorrect input
-            gameOver();
-            return;
-        }
+        if (mode === 'survival') {
+            if (!canInput) return;
 
-        if (playerInput.length === sequence.length) {
-            // Correct sequence entered
-            canInput = false;
-            const soundDelay = 500; // Delay before the success sound (adjust as needed)
-            const nextLevelDelay = 800; // Delay after the success sound, before next level (adjust as needed)
-    
-            setTimeout(() => {
-                sounds['success'].play(); // Play success sound after soundDelay
+            playerInput.push(clickedNote);
+            playNote(clickedNote);
+            highlightTile(clickedNote);
+
+            // Check the player's input in real-time
+            const currentStep = playerInput.length - 1;
+            if (playerInput[currentStep] !== sequence[currentStep]) {
+                // Incorrect input
+                gameOver();
+                return;
+            }
+
+            if (playerInput.length === sequence.length) {
+                // Correct sequence entered
+                canInput = false;
+                const soundDelay = 500; // Delay before the success sound (adjust as needed)
+                const nextLevelDelay = 800; // Delay after the success sound, before next level (adjust as needed)
+
                 setTimeout(() => {
-                    nextLevel(); // Proceed to the next level after nextLevelDelay
-                }, nextLevelDelay);
-            }, soundDelay);
+                    sounds['success'].play(); // Play success sound after soundDelay
+                    setTimeout(() => {
+                        nextLevel(); // Proceed to the next level after nextLevelDelay
+                    }, nextLevelDelay);
+                }, soundDelay);
+            }
+        } else if (mode === 'free-play') {
+            // In Free Play mode, simply play the note
+            playNote(clickedNote);
+            highlightTile(clickedNote);
         }
     }
 
@@ -166,9 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
         canInput = false;
         sounds['failure'].play(); // Play failure sound
         finalLevelDisplay.textContent = currentLevel;
-        // Submit score to Dreamlo
+        // Submit score to leaderboard (Commented Out)
+        /*
         const playerName = prompt("Game Over! Enter your name for the leaderboard:");
-        submitScore(playerName, currentLevel, difficulty);
+        if (playerName !== null) { // Ensure the player didn't cancel the prompt
+            submitScore(playerName.trim() === "" ? "Anonymous" : playerName.trim(), currentLevel, difficulty);
+        }
+        */
         showScreen(gameoverScreen);
     }
 
@@ -182,10 +228,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show the selected screen
         screen.classList.remove('hidden');
 
-        // Initialize leaderboard if Game Over screen
+        // Initialize leaderboard if Game Over screen (Commented Out)
+        /*
         if (screen === gameoverScreen) {
             initializeLeaderboard();
         }
+        */
     }
 
     // Request Fullscreen
@@ -216,54 +264,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Handle Start Game Button Click
-    startButton.addEventListener('click', () => {
-        // Get selected difficulty
-        difficultyRadios.forEach(radio => {
-            if (radio.checked) {
-                difficulty = radio.value;
-                switch(difficulty) {
-                    case 'Easy':
-                        playbackSpeed = 800; // Slower
-                        break;
-                    case 'Medium':
-                        playbackSpeed = 600; // Default
-                        break;
-                    case 'Hard':
-                        playbackSpeed = 400; // Faster
-                        break;
-                    default:
-                        playbackSpeed = 600;
-                }
-            }
-        });
-
-        showScreen(gameScreen);
-        initializeGame();
-        requestFullscreen(document.documentElement); // Request full-screen for the entire page
+    // Handle Survival Button Click
+    survivalButton.addEventListener('click', () => {
+        mode = 'survival';
+        // Update selected class
+        survivalButton.classList.add('selected');
+        freePlayButton.classList.remove('selected');
+        // Show difficulty selection
+        document.querySelector('.difficulty-selection').classList.remove('hidden');
     });
 
-    // Handle Restart Game Button Click
-    restartButton.addEventListener('click', () => {
-        showScreen(gameScreen);
-        initializeGame();
-        requestFullscreen(document.documentElement); // Request full-screen for the entire page
+    // Handle Free Play Button Click
+    freePlayButton.addEventListener('click', () => {
+        mode = 'free-play';
+        // Update selected class
+        freePlayButton.classList.add('selected');
+        survivalButton.classList.remove('selected');
+        // Hide difficulty selection
+        document.querySelector('.difficulty-selection').classList.add('hidden');
     });
 
-    // Handle Home Button Click
-    homeButton.addEventListener('click', () => {
-        showScreen(startScreen);
-    });
-
-    // Handle Exit Fullscreen Button Click
-    exitFullscreenButton.addEventListener('click', () => {
-        exitFullscreen();
-    });
-
-    // Handle Difficulty Selection
-    difficultyRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            difficulty = e.target.value;
+    // Handle Difficulty Button Click
+    difficultyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove 'selected' class from all difficulty buttons
+            difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+            // Add 'selected' class to the clicked button
+            button.classList.add('selected');
+            // Set the selected difficulty
+            difficulty = button.getAttribute('data-difficulty');
+            // Update playback speed based on difficulty
             switch(difficulty) {
                 case 'Easy':
                     playbackSpeed = 1000; // Slower
@@ -277,6 +307,154 @@ document.addEventListener('DOMContentLoaded', () => {
                 default:
                     playbackSpeed = 800;
             }
+        });
+    });
+
+    // Handle Begin Button Click
+    beginButton.addEventListener('click', () => {
+        if (mode === 'survival') {
+            // Ensure a difficulty is selected
+            const selectedDifficultyButton = document.querySelector('.difficulty-button.selected');
+            if (selectedDifficultyButton) {
+                difficulty = selectedDifficultyButton.getAttribute('data-difficulty');
+            } else {
+                difficulty = 'Medium'; // Default if none selected
+                playbackSpeed = 800;
+                // Optionally, highlight Medium difficulty
+                const mediumButton = document.querySelector('.difficulty-button[data-difficulty="Medium"]');
+                if (mediumButton) {
+                    mediumButton.classList.add('selected');
+                }
+            }
+        } else if (mode === 'free-play') {
+            difficulty = ''; // No difficulty in free play
+        }
+
+        // Update mode title
+        if (mode === 'survival') {
+            modeTitle.textContent = 'Survival Mode';
+            levelContainer.classList.remove('hidden');
+        } else if (mode === 'free-play') {
+            modeTitle.textContent = 'Free Play Mode';
+            levelContainer.classList.add('hidden');
+        }
+
+        showScreen(gameScreen);
+        initializeGame();
+        requestFullscreen(document.documentElement); // Request full-screen for the entire page
+    });
+
+    // Handle Restart Game Button Click
+    restartButton.addEventListener('click', () => {
+        // Reset to Survival Mode
+        mode = 'survival';
+        survivalButton.classList.add('selected');
+        freePlayButton.classList.remove('selected');
+        document.querySelector('.difficulty-selection').classList.remove('hidden');
+
+        // Reset difficulty to default (Medium)
+        const mediumDifficulty = document.querySelector('.difficulty-button[data-difficulty="Medium"]');
+        if (mediumDifficulty) {
+            difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+            mediumDifficulty.classList.add('selected');
+            difficulty = 'Medium';
+            playbackSpeed = 800;
+        }
+
+        // Reset instrument selection to default if desired
+        // Optionally uncomment the following lines to reset to Piano
+        /*
+        instrumentButtons.forEach(btn => btn.classList.remove('selected'));
+        const pianoButton = document.querySelector('.instrument-button[data-instrument="piano"]');
+        if (pianoButton) {
+            pianoButton.classList.add('selected');
+            selectedInstrument = 'piano';
+        }
+        */
+
+        modeTitle.textContent = 'Survival Mode';
+        levelDisplay.textContent = currentLevel;
+
+        showScreen(gameScreen);
+        initializeGame();
+        requestFullscreen(document.documentElement); // Request full-screen for the entire page
+    });
+
+    // Handle Home Button Click
+    homeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Reset to Survival Mode by default
+            mode = 'survival';
+            survivalButton.classList.add('selected');
+            freePlayButton.classList.remove('selected');
+            // Show difficulty selection
+            document.querySelector('.difficulty-selection').classList.remove('hidden');
+            // Reset difficulty to default
+            const mediumDifficulty = document.querySelector('.difficulty-button[data-difficulty="Medium"]');
+            if (mediumDifficulty) {
+                difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+                mediumDifficulty.classList.add('selected');
+                difficulty = 'Medium';
+                playbackSpeed = 800;
+            }
+            // Reset instrument selection to default if desired
+            // Optionally uncomment the following lines to reset to Piano
+            /*
+            instrumentButtons.forEach(btn => btn.classList.remove('selected'));
+            const pianoButton = document.querySelector('.instrument-button[data-instrument="piano"]');
+            if (pianoButton) {
+                pianoButton.classList.add('selected');
+                selectedInstrument = 'piano';
+            }
+            */
+
+            showScreen(startScreen);
+        });
+    });
+
+    // Handle Quit Button Click
+    const quitButton = document.getElementById('quit-button');
+    quitButton.addEventListener('click', () => {
+        // Show Home screen
+        mode = 'survival';
+        survivalButton.classList.add('selected');
+        freePlayButton.classList.remove('selected');
+        // Show difficulty selection
+        document.querySelector('.difficulty-selection').classList.remove('hidden');
+        // Reset difficulty to default
+        const mediumDifficulty = document.querySelector('.difficulty-button[data-difficulty="Medium"]');
+        if (mediumDifficulty) {
+            difficultyButtons.forEach(btn => btn.classList.remove('selected'));
+            mediumDifficulty.classList.add('selected');
+            difficulty = 'Medium';
+            playbackSpeed = 800;
+        }
+        // Reset instrument selection to default if desired
+        // Optionally uncomment the following lines to reset to Piano
+        /*
+        instrumentButtons.forEach(btn => btn.classList.remove('selected'));
+        const pianoButton = document.querySelector('.instrument-button[data-instrument="piano"]');
+        if (pianoButton) {
+            pianoButton.classList.add('selected');
+            selectedInstrument = 'piano';
+        }
+        */
+
+        showScreen(startScreen);
+    });
+
+    // Handle Difficulty Button Click (Already Covered Above)
+    // No additional code needed here
+
+    // Handle Instrument Selection
+    instrumentButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove 'selected' class from all instrument buttons
+            instrumentButtons.forEach(btn => btn.classList.remove('selected'));
+            // Add 'selected' class to the clicked button
+            button.classList.add('selected');
+            // Set the selected instrument
+            selectedInstrument = button.getAttribute('data-instrument');
         });
     });
 
@@ -300,28 +478,25 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-    // Initialize Dreamlo Leaderboard
+    /* 
+    // Leaderboard Functions (Commented Out)
+
+    // Initialize Leaderboard
     function initializeLeaderboard() {
         fetch(dreamloRetrieveURL)
             .then(response => response.json())
             .then(data => {
                 dreamloHighscores.innerHTML = '';
-                if (!data || !data.dreamlo || !data.dreamlo.leaderboard || !data.dreamlo.leaderboard.entry || data.dreamlo.leaderboard.entry.length === 0) {
+                if (!data || !data.success || !data.scores || data.scores.length === 0) {
                     dreamloHighscores.innerHTML = '<p>No scores yet.</p>';
                     return;
                 }
-    
-                // 1. Sort the entries by score in descending order
-                const sortedEntries = data.dreamlo.leaderboard.entry.sort((a, b) => parseInt(b.score) - parseInt(a.score));
-    
-                // 2. Get the top 5 entries
-                const top5Entries = sortedEntries.slice(0, 5);
-    
-                // 3. Display the top 5 entries
+
+                // Display the top scores
                 const ul = document.createElement('ul');
-                top5Entries.forEach(entry => {
+                data.scores.forEach(entry => {
                     const li = document.createElement('li');
-                    li.textContent = `${entry.name} - Level ${entry.score} (${entry.text})`; // Display name, score, and difficulty
+                    li.textContent = `${entry.name} - Level ${entry.level} (${entry.difficulty}) on ${entry.date}`;
                     ul.appendChild(li);
                 });
                 dreamloHighscores.appendChild(ul);
@@ -332,33 +507,31 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Submit Score to Dreamlo
+    // Submit Score to Leaderboard
     function submitScore(name, score, difficulty) {
-        if (!name) {
-            name = 'Anonymous';
-        }
+        const payload = {
+            name: name,
+            level: score,
+            difficulty: difficulty
+        };
 
-        // Encode parameters to ensure the URL is correctly formatted
-        const encodedName = encodeURIComponent(name);
-        const encodedScore = encodeURIComponent(score);
-        const encodedDifficulty = encodeURIComponent(difficulty);
-
-        const submitURL = `${dreamloAddURL}/${encodedName}/${encodedScore}/0/${encodedDifficulty}`;
-
-        // Send GET request to add the score
-        fetch(submitURL)
-            .then(response => {
-                if (response.ok) {
-                    console.log('Score submitted successfully.');
-                } else {
-                    console.error('Failed to submit score.');
-                }
+        fetch(googleAppsScriptPostURL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.text())
+            .then(result => {
+                console.log(result); // Optional: Handle the response if needed
             })
             .catch(error => {
                 console.error('Error submitting score:', error);
             });
     }
-
+    */
+    
     // Initially show the start screen
     showScreen(startScreen);
 });

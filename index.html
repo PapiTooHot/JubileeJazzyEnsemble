@@ -11,36 +11,41 @@
     <div id="start-screen" class="screen">
         <div class="background" id="start-background"></div>
         <h1>Jubilee's Jazzy Ensemble</h1>
-        <p>Replicate the note sequences played by Jubilee!</p>
         
-        <!-- Difficulty Selection -->
-        <div class="difficulty-selection">
-            <h3>Select Difficulty:</h3>
-            <label>
-                <input type="radio" name="difficulty" value="Easy" checked> Easy
-            </label>
-            <label>
-                <input type="radio" name="difficulty" value="Medium"> Medium
-            </label>
-            <label>
-                <input type="radio" name="difficulty" value="Hard"> Hard
-            </label>
+        <!-- Mode Selection -->
+        <div class="mode-selection">
+            <h3>Select Mode:</h3>
+            <button id="survival-button" class="mode-button selected" data-mode="survival">Survival</button>
+            <button id="free-play-button" class="mode-button" data-mode="free-play">Free Play</button>
         </div>
 
-        <!-- Instrument Selection using Buttons -->
-<div class="instrument-selection">
-    <h3>Select Instrument:</h3>
-    <button class="instrument-button" data-instrument="piano">Piano</button>
-    <button class="instrument-button" data-instrument="trumpet">Trumpet</button>
-</div>
+        <!-- Difficulty Selection (Initially Hidden) -->
+        <div class="difficulty-selection">
+            <h3>Select Difficulty:</h3>
+            <button class="difficulty-button" data-difficulty="Easy">Easy</button>
+            <button class="difficulty-button selected" data-difficulty="Medium">Medium</button>
+            <button class="difficulty-button" data-difficulty="Hard">Hard</button>
+        </div>
         
-        <button id="start-button">Start Game</button>
+        <!-- Instrument Selection using Buttons -->
+        <div class="instrument-selection">
+            <h3>Select Instrument:</h3>
+            <button class="instrument-button selected" data-instrument="trumpet">Trumpet</button>
+            <button class="instrument-button" data-instrument="piano">Piano</button>
+            <!-- Add more instruments here as needed -->
+        </div>
+        
+        <!-- Begin Button -->
+        <button id="begin-button">Begin</button>
     </div>
 
     <!-- Game Screen -->
     <div id="game-screen" class="screen hidden">
         <div class="background" id="game-background"></div>
-        <h2>Level: <span id="level">1</span></h2>
+        <h2 id="mode-title">Survival Mode</h2> <!-- Dynamic Title Based on Mode -->
+        <div id="level-container">
+            <h2>Level: <span id="level">1</span></h2>
+        </div>
         <div class="tiles-container">
             <div class="tile C-tile" data-note="C" id="C" aria-label="C Note"><span>C</span></div>
             <div class="tile D-tile" data-note="D" id="D" aria-label="D Note"><span>D</span></div>
@@ -50,8 +55,11 @@
             <div class="tile A-tile" data-note="A" id="A" aria-label="A Note"><span>A</span></div>
             <div class="tile B-tile" data-note="B" id="B" aria-label="B Note"><span>B</span></div>
         </div>
-        <!-- Exit Fullscreen Button -->
-        <button id="exit-fullscreen-button" class="hidden">Exit Fullscreen</button>
+        <!-- Exit Fullscreen Button 
+        <button id="exit-fullscreen-button" class="hidden">Exit Fullscreen</button>-->
+        
+        <!-- Quit Button (Positioned at Top Right) -->
+        <button id="quit-button">Home</button>
     </div>
 
     <!-- Game Over Screen -->
@@ -61,11 +69,25 @@
         <p>You reached level <span id="final-level">1</span></p>
         <button id="restart-button">Restart Game</button>
         <button id="home-button">Home</button> <!-- Home Button -->
-        <!-- Leaderboard -->
+        <!-- Leaderboard Table (Commented Out) -->
+        <!--
         <div class="leaderboard">
             <h3>Leaderboard</h3>
-            <div id="dreamlo-highscores"></div>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Level</th>
+                        <th>Difficulty</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populate dynamically or leave empty for now -->
+                </tbody>
+            </table>
         </div>
+        -->
     </div>
 
     <script src="js/game.js"></script>
