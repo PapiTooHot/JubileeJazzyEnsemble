@@ -53,7 +53,7 @@ body, html {
     background-image: url('../assets/images/gameoverbackground.png');
 }
 
-h1, h2, p {
+h1, h2, h3, p {
     color: #fff; /* Changed to white for better contrast on backgrounds */
     margin-bottom: 20px;
     text-shadow: 2px 2px 4px #000; /* Added text shadow for readability */
@@ -74,9 +74,55 @@ button:hover {
     background-color: #45a049;
 }
 
+/* Difficulty Selection Styles */
+.difficulty-selection {
+    margin: 20px 0;
+}
+
+.difficulty-selection label {
+    margin: 0 10px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+.difficulty-selection input {
+    margin-right: 5px;
+}
+
+/* Leaderboard Styles */
+.leaderboard {
+    margin-top: 30px;
+}
+
+.leaderboard h3 {
+    margin-bottom: 10px;
+}
+
+#dreamlo-highscores {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.leaderboard ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.leaderboard li {
+    padding: 5px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.leaderboard li:last-child {
+    border-bottom: none;
+}
+
+/* Tiles Container */
 .tiles-container {
     display: flex;
-    flex-wrap: wrap; /* Allows tiles to wrap on smaller screens */
     justify-content: center;
     gap: 15px;
     width: 80%;
@@ -145,6 +191,51 @@ button:hover {
     background-color: rgba(255, 255, 255, 0.3); /* Light overlay to indicate activation */
 }
 
+/* Hover Effects for Desktop Users */
+.tile:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Exit Fullscreen Button Styles */
+#exit-fullscreen-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    font-size: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#exit-fullscreen-button:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Initially hide the exit button */
+#exit-fullscreen-button.hidden {
+    display: none;
+}
+
+/* Show the exit button when in fullscreen */
+.fullscreen #exit-fullscreen-button {
+    display: block;
+}
+
+/* Home Button Styles */
+#home-button {
+    margin-top: 15px;
+    background-color: #008CBA; /* Blue */
+}
+
+#home-button:hover {
+    background-color: #007B9E;
+}
+
 /* Responsive Design */
 @media (max-width: 800px) {
     .tiles-container {
@@ -166,6 +257,11 @@ button:hover {
         font-size: 1em;
         padding: 8px 16px;
     }
+
+    /* Leaderboard Adjustments */
+    #dreamlo-highscores {
+        max-width: 250px;
+    }
 }
 
 @media (max-width: 500px) {
@@ -183,4 +279,20 @@ button:hover {
     .tile span {
         font-size: 1.2em;
     }
+}
+
+/* Style for instrument buttons */
+.instrument-button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #eee; /* Default background color */
+    cursor: pointer;
+}
+
+/* Style for the selected instrument button */
+.instrument-button.selected {
+    background-color: #007bff; /* Example: Blue for selected */
+    color: white;
 }

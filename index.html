@@ -12,6 +12,28 @@
         <div class="background" id="start-background"></div>
         <h1>Jubilee's Jazzy Ensemble</h1>
         <p>Replicate the note sequences played by Jubilee!</p>
+        
+        <!-- Difficulty Selection -->
+        <div class="difficulty-selection">
+            <h3>Select Difficulty:</h3>
+            <label>
+                <input type="radio" name="difficulty" value="Easy" checked> Easy
+            </label>
+            <label>
+                <input type="radio" name="difficulty" value="Medium"> Medium
+            </label>
+            <label>
+                <input type="radio" name="difficulty" value="Hard"> Hard
+            </label>
+        </div>
+
+        <!-- Instrument Selection using Buttons -->
+<div class="instrument-selection">
+    <h3>Select Instrument:</h3>
+    <button class="instrument-button" data-instrument="piano">Piano</button>
+    <button class="instrument-button" data-instrument="trumpet">Trumpet</button>
+</div>
+        
         <button id="start-button">Start Game</button>
     </div>
 
@@ -20,14 +42,16 @@
         <div class="background" id="game-background"></div>
         <h2>Level: <span id="level">1</span></h2>
         <div class="tiles-container">
-            <div class="tile C-tile" data-note="C" id="C"><span>C</span></div>
-            <div class="tile D-tile" data-note="D" id="D"><span>D</span></div>
-            <div class="tile E-tile" data-note="E" id="E"><span>E</span></div>
-            <div class="tile F-tile" data-note="F" id="F"><span>F</span></div>
-            <div class="tile G-tile" data-note="G" id="G"><span>G</span></div>
-            <div class="tile A-tile" data-note="A" id="A"><span>A</span></div>
-            <div class="tile B-tile" data-note="B" id="B"><span>B</span></div>
+            <div class="tile C-tile" data-note="C" id="C" aria-label="C Note"><span>C</span></div>
+            <div class="tile D-tile" data-note="D" id="D" aria-label="D Note"><span>D</span></div>
+            <div class="tile E-tile" data-note="E" id="E" aria-label="E Note"><span>E</span></div>
+            <div class="tile F-tile" data-note="F" id="F" aria-label="F Note"><span>F</span></div>
+            <div class="tile G-tile" data-note="G" id="G" aria-label="G Note"><span>G</span></div>
+            <div class="tile A-tile" data-note="A" id="A" aria-label="A Note"><span>A</span></div>
+            <div class="tile B-tile" data-note="B" id="B" aria-label="B Note"><span>B</span></div>
         </div>
+        <!-- Exit Fullscreen Button -->
+        <button id="exit-fullscreen-button" class="hidden">Exit Fullscreen</button>
     </div>
 
     <!-- Game Over Screen -->
@@ -36,6 +60,12 @@
         <h1>Game Over</h1>
         <p>You reached level <span id="final-level">1</span></p>
         <button id="restart-button">Restart Game</button>
+        <button id="home-button">Home</button> <!-- Home Button -->
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <h3>Leaderboard</h3>
+            <div id="dreamlo-highscores"></div>
+        </div>
     </div>
 
     <script src="js/game.js"></script>

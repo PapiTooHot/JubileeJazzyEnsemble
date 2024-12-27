@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let playerInput = [];
     let currentLevel = 1;
     let canInput = false;
+    let playbackSpeed = 800; // Default to Medium
+    let difficulty = 'Medium'; // Default difficulty
 
     // DOM Elements
     const startScreen = document.getElementById('start-screen');
@@ -15,21 +17,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startButton = document.getElementById('start-button');
     const restartButton = document.getElementById('restart-button');
+    const homeButton = document.getElementById('home-button'); // Home Button
 
     const levelDisplay = document.getElementById('level');
     const finalLevelDisplay = document.getElementById('final-level');
 
     const tiles = document.querySelectorAll('.tile');
+    const exitFullscreenButton = document.getElementById('exit-fullscreen-button');
+
+    // Difficulty Selection Elements
+    const difficultyRadios = document.querySelectorAll('input[name="difficulty"]');
+
+    //Instrument Selection
+    const instrumentButtons = document.querySelectorAll('.instrument-button');
+
+    // Leaderboard Element
+    const dreamloPublicKey = '676cb7128f40bc11e0fedece'; // Public Code
+    const dreamloAddURL = 'http://dreamlo.com/lb/dqcv0UkALUqprzJiF-5T_Q7jTPx0v-gkSSlfF5we1C6g/add'; // Add URL
+    const dreamloRetrieveURL = `http://dreamlo.com/lb/${dreamloPublicKey}/json`; // Retrieve URL
+    const dreamloHighscores = document.getElementById('dreamlo-highscores');
 
     // Sound Assets
     const sounds = {
-        'C': new Audio('./assets/sounds/C.wav'),
-        'D': new Audio('./assets/sounds/D.wav'),
-        'E': new Audio('./assets/sounds/E.wav'),
-        'F': new Audio('./assets/sounds/F.wav'),
-        'G': new Audio('./assets/sounds/G.wav'),
-        'A': new Audio('./assets/sounds/A.wav'),
-        'B': new Audio('./assets/sounds/B.wav')
+        'C': new Audio('./assets/sounds/piano/C.wav'),
+        'D': new Audio('./assets/sounds/piano/D.wav'),
+        'E': new Audio('./assets/sounds/piano/E.wav'),
+        'F': new Audio('./assets/sounds/piano/F.wav'),
+        'G': new Audio('./assets/sounds/piano/G.wav'),
+        'A': new Audio('./assets/sounds/piano/A.wav'),
+        'B': new Audio('./assets/sounds/piano/B.wav'),
+        'success': new Audio('./assets/sounds/effects/success.wav'), // Success Sound
+        'failure': new Audio('./assets/sounds/effects/failure.wav')  // Failure Sound
     };
 
     // Preload sounds to ensure they are ready when needed
@@ -74,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 playNote(note);
                 highlightTile(note);
             }, delay);
-            delay += 800; // Time between notes
+            delay += playbackSpeed; // Time between notes based on difficulty
         });
 
         // Allow player input after sequence is played
@@ -122,9 +140,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerInput.length === sequence.length) {
             // Correct sequence entered
             canInput = false;
+            const soundDelay = 500; // Delay before the success sound (adjust as needed)
+            const nextLevelDelay = 800; // Delay after the success sound, before next level (adjust as needed)
+    
             setTimeout(() => {
-                nextLevel();
-            }, 1000);
+                sounds['success'].play(); // Play success sound after soundDelay
+                setTimeout(() => {
+                    nextLevel(); // Proceed to the next level after nextLevelDelay
+                }, nextLevelDelay);
+            }, soundDelay);
         }
     }
 
@@ -140,7 +164,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Game Over
     function gameOver() {
         canInput = false;
+        sounds['failure'].play(); // Play failure sound
         finalLevelDisplay.textContent = currentLevel;
+        // Submit score to Dreamlo
+        const playerName = prompt("Game Over! Enter your name for the leaderboard:");
+        submitScore(playerName, currentLevel, difficulty);
         showScreen(gameoverScreen);
     }
 
@@ -153,12 +181,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show the selected screen
         screen.classList.remove('hidden');
+
+        // Initialize leaderboard if Game Over screen
+        if (screen === gameoverScreen) {
+            initializeLeaderboard();
+        }
     }
 
     // Request Fullscreen
     function requestFullscreen(element) {
         if (element.requestFullscreen) {
-            element.requestFullscreen();
+            element.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+            });
         } else if (element.mozRequestFullScreen) { // Firefox
             element.mozRequestFullScreen();
         } else if (element.webkitRequestFullscreen) { // Chrome, Safari and Opera
@@ -168,8 +203,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Exit Fullscreen
+    function exitFullscreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) { // Firefox
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { // IE/Edge
+            document.msExitFullscreen();
+        }
+    }
+
     // Handle Start Game Button Click
     startButton.addEventListener('click', () => {
+        // Get selected difficulty
+        difficultyRadios.forEach(radio => {
+            if (radio.checked) {
+                difficulty = radio.value;
+                switch(difficulty) {
+                    case 'Easy':
+                        playbackSpeed = 800; // Slower
+                        break;
+                    case 'Medium':
+                        playbackSpeed = 600; // Default
+                        break;
+                    case 'Hard':
+                        playbackSpeed = 400; // Faster
+                        break;
+                    default:
+                        playbackSpeed = 600;
+                }
+            }
+        });
+
         showScreen(gameScreen);
         initializeGame();
         requestFullscreen(document.documentElement); // Request full-screen for the entire page
@@ -182,18 +250,114 @@ document.addEventListener('DOMContentLoaded', () => {
         requestFullscreen(document.documentElement); // Request full-screen for the entire page
     });
 
+    // Handle Home Button Click
+    homeButton.addEventListener('click', () => {
+        showScreen(startScreen);
+    });
+
+    // Handle Exit Fullscreen Button Click
+    exitFullscreenButton.addEventListener('click', () => {
+        exitFullscreen();
+    });
+
+    // Handle Difficulty Selection
+    difficultyRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            difficulty = e.target.value;
+            switch(difficulty) {
+                case 'Easy':
+                    playbackSpeed = 1000; // Slower
+                    break;
+                case 'Medium':
+                    playbackSpeed = 800; // Default
+                    break;
+                case 'Hard':
+                    playbackSpeed = 600; // Faster
+                    break;
+                default:
+                    playbackSpeed = 800;
+            }
+        });
+    });
+
     // Add Event Listeners to Tiles
     tiles.forEach(tile => {
         tile.addEventListener('click', handleTileClick);
     });
 
-    // Listen for Fullscreen Change Events (Optional)
-    document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement) {
-            // Optional: Handle when the user exits full-screen mode
-            console.log('Exited full-screen mode');
+    // Listen for Fullscreen Change Events
+    function handleFullscreenChange() {
+        if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+            // Add a class to the game screen to show the exit button
+            gameScreen.classList.add('fullscreen');
+        } else {
+            gameScreen.classList.remove('fullscreen');
         }
-    });
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    // Initialize Dreamlo Leaderboard
+    function initializeLeaderboard() {
+        fetch(dreamloRetrieveURL)
+            .then(response => response.json())
+            .then(data => {
+                dreamloHighscores.innerHTML = '';
+                if (!data || !data.dreamlo || !data.dreamlo.leaderboard || !data.dreamlo.leaderboard.entry || data.dreamlo.leaderboard.entry.length === 0) {
+                    dreamloHighscores.innerHTML = '<p>No scores yet.</p>';
+                    return;
+                }
+    
+                // 1. Sort the entries by score in descending order
+                const sortedEntries = data.dreamlo.leaderboard.entry.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+    
+                // 2. Get the top 5 entries
+                const top5Entries = sortedEntries.slice(0, 5);
+    
+                // 3. Display the top 5 entries
+                const ul = document.createElement('ul');
+                top5Entries.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.textContent = `${entry.name} - Level ${entry.score} (${entry.text})`; // Display name, score, and difficulty
+                    ul.appendChild(li);
+                });
+                dreamloHighscores.appendChild(ul);
+            })
+            .catch(error => {
+                console.error('Error retrieving leaderboard:', error);
+                dreamloHighscores.innerHTML = '<p>Error loading leaderboard.</p>';
+            });
+    }
+
+    // Submit Score to Dreamlo
+    function submitScore(name, score, difficulty) {
+        if (!name) {
+            name = 'Anonymous';
+        }
+
+        // Encode parameters to ensure the URL is correctly formatted
+        const encodedName = encodeURIComponent(name);
+        const encodedScore = encodeURIComponent(score);
+        const encodedDifficulty = encodeURIComponent(difficulty);
+
+        const submitURL = `${dreamloAddURL}/${encodedName}/${encodedScore}/0/${encodedDifficulty}`;
+
+        // Send GET request to add the score
+        fetch(submitURL)
+            .then(response => {
+                if (response.ok) {
+                    console.log('Score submitted successfully.');
+                } else {
+                    console.error('Failed to submit score.');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting score:', error);
+            });
+    }
 
     // Initially show the start screen
     showScreen(startScreen);
